@@ -1,23 +1,24 @@
 package org.github.nikalaikina.manalyser
 
+import akka.util.Timeout
 import org.github.nikalaikina.manalyser.dao.MessageDao
-import org.telegram.api.auth.TLSentCode
 import org.telegram.api.engine.{RpcException, TelegramApi}
 import org.telegram.api.functions.auth.{TLRequestAuthSendCode, TLRequestAuthSignIn}
 import org.telegram.api.functions.messages.{TLRequestMessagesGetDialogs, TLRequestMessagesGetHistory}
 import org.telegram.api.input.peer.TLInputPeerUser
-import org.telegram.api.message.TLAbsMessage
 import org.telegram.api.messages.TLAbsMessages
-import org.telegram.api.messages.dialogs.TLAbsDialogs
-import org.telegram.tl.TLVector
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.duration.DurationInt
+import scala.concurrent.{Await, Future}
+import scala.util.{Failure, Success, Try}
 
 class Service(api: TelegramApi) {
   import Setup._
 
-  val dao = new MessageDao()
+  implicit val ec = scala.concurrent.ExecutionContext.global
+  val t = 8 hours
 
+  val dao = new MessageDao()
 
   var myId: Int = _
 
@@ -47,7 +48,7 @@ class Service(api: TelegramApi) {
   }
 
   def getHistory(userId: Int): Vector[Message] = {
-    getAll { (offset, count) =>
+    val ans = getAll { (offset, count) =>
       val getHistoryReq = new TLRequestMessagesGetHistory()
       val user = new TLInputPeerUser()
       user.setUserId(userId)
@@ -57,40 +58,40 @@ class Service(api: TelegramApi) {
       val call: TLAbsMessages = doRpcCall { () => api.doRpcCall(getHistoryReq) }
       Message.convert(call.getMessages, myId)
     }
+    Await.result(ans, t)
   }
 
   def doRpcCall[T](f: () => T, attempts: Int = 3): T = {
-    if (attempts == 0) return null.asInstanceOf[T]
-    var resp: T = null.asInstanceOf[T]
-    try {
-      resp = f()
-    } catch {
-      case e: RpcException if e.getErrorCode == 303 =>
-        val destDC = if (e.getErrorTag.startsWith("NETWORK_MIGRATE_")) {
-          Integer.parseInt(e.getErrorTag.substring("NETWORK_MIGRATE_".length()))
-        } else if (e.getErrorTag.startsWith("PHONE_MIGRATE_")) {
-          Integer.parseInt(e.getErrorTag.substring("PHONE_MIGRATE_".length()))
-        } else /*if (e.getErrorTag.startsWith("USER_MIGRATE_")) */{
-          Integer.parseInt(e.getErrorTag.substring("USER_MIGRATE_".length()))
+    Try(f()) match {
+      case Success(result) =>
+        result
+      case Failure(exception: Throwable) if attempts > 0 =>
+        println(exception)
+        exception match {
+          case e: RpcException if e.getErrorCode == 303 =>
+            val destDC = if (e.getErrorTag.startsWith("NETWORK_MIGRATE_")) {
+              Integer.parseInt(e.getErrorTag.substring("NETWORK_MIGRATE_".length()))
+            } else if (e.getErrorTag.startsWith("PHONE_MIGRATE_")) {
+              Integer.parseInt(e.getErrorTag.substring("PHONE_MIGRATE_".length()))
+            } else /*if (e.getErrorTag.startsWith("USER_MIGRATE_")) */ {
+              Integer.parseInt(e.getErrorTag.substring("USER_MIGRATE_".length()))
+            }
+            api.switchToDc(destDC)
+          case e: RpcException if e.getErrorCode == 500 && e.getErrorTag == "AUTH_RESTART" =>
+            // retry
+          case e: RpcException if e.getErrorTag.startsWith("FLOOD_WAIT_") =>
+            val secs = Integer.parseInt(e.getErrorTag.substring("FLOOD_WAIT_".length()))
+            Thread.sleep(1000 * (secs + 1))
+          case e: Throwable =>
+            Thread.sleep(1000 * 2)
         }
-        api.switchToDc(destDC)
-        resp = doRpcCall(f, attempts - 1)
-      case e: RpcException if e.getErrorCode == 500 && e.getErrorTag == "AUTH_RESTART" =>
-        resp = doRpcCall(f, attempts - 1)
-      case e: RpcException if e.getErrorTag.startsWith("FLOOD_WAIT_") =>
-        val secs = Integer.parseInt(e.getErrorTag.substring("FLOOD_WAIT_".length()))
-        Thread.sleep(1000 * (secs + 1))
-        resp = doRpcCall(f, attempts - 1)
-      case x: Throwable =>
-        println(x)
-        Thread.sleep(1000 * 3)
-        resp = doRpcCall(f, attempts - 1)
+        doRpcCall(f, attempts - 1)
+      case Failure(exception: Throwable) =>
+        null.asInstanceOf[T]
     }
-    println(resp)
-    resp
   }
 
-  def getAll(f: (Int, Int) => Vector[Message]): Vector[Message] = {
+  def getAll(f: (Int, Int) => Vector[Message]): Future[Vector[Message]] = {
     val count = 100
     def getNext(offset: Int, acc: Vector[Message]): Vector[Message] = {
       val res = f(offset, count)
@@ -101,7 +102,7 @@ class Service(api: TelegramApi) {
       else
         getNext(offset + count, next)
     }
-    getNext(0, Vector.empty)
+    dao.count.map(_.toInt).map(getNext(_, Vector.empty))
   }
 
 }
