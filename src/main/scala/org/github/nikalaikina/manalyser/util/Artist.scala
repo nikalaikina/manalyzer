@@ -6,7 +6,7 @@ import scala.util.Random
 
 object Artist {
 
-  def draw(array: Seq[(List[Double], String)]): String = {
+  def draw(array: Seq[(Seq[Double], String)]): String = {
     val plots = array.map {
       case (line, name) =>
         val plot = Plots.newPlot(Data.newData(line:_*))

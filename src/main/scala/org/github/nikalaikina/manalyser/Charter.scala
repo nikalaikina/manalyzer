@@ -1,15 +1,12 @@
 package org.github.nikalaikina.manalyser
 
-import java.time.{LocalDate, LocalDateTime, ZoneOffset}
-import java.util.TimeZone
+import java.time.{LocalDate, LocalDateTime}
 
-import org.apache.commons.math3.stat.regression.SimpleRegression
 import org.github.nikalaikina.manalyser.dao.MessageDao
 import org.github.nikalaikina.manalyser.util.Artist
 
-import scala.collection.immutable.Seq
 import scala.concurrent.ExecutionContext
-import scalaz.syntax.std.option._
+import scala.util.{Failure, Success, Try}
 
 object Charter extends App {
 
@@ -17,53 +14,11 @@ object Charter extends App {
     java.util.concurrent.Executors.newCachedThreadPool()
   )
 
-  val stats: List[((Iterable[Message] => Double), String)] = List(
-    (msgs => msgs.size, "count"),
-    (msgs => msgs.flatMap(_.text).map(_.size).sum, "text sum"),
-    (msgs => {
-      val sum = msgs.flatMap(_.text).map(_.size).sum
-      if (msgs.isEmpty) 0 else sum / msgs.size
-    }, "average"),
-    (msgs => msgs.flatMap(_.text).map(_.size).some.filter(_.nonEmpty).map(_.max.toDouble).getOrElse(0d), "max msg size"),
-    (msgs => {
-      val mine = msgs.filter(_.fromMe).flatMap(_.text).map(_.size).sum
-      val notMine = msgs.filterNot(_.fromMe).flatMap(_.text).map(_.size).sum
-      if (mine == 0) 1 else notMine / mine
-    }, "not mine to mine")
-  )
+  val stats: List[Metric] = Metrics.stats
 
   val dao = new MessageDao()
   dao.all.map { msgs =>
-    val from: LocalDateTime = msgs.map(_.time).minBy(x => x.getYear * 10000 + x.getMonthValue * 100 + x.getDayOfMonth)
-
-    val now = LocalDate.now()
-    def processDays(date: LocalDate = from.toLocalDate, ans: List[List[Double]] = stats.map(_ => List[Double]())): List[List[Double]] = {
-      if (date == now) return ans
-
-      val ms = msgs.filter(_.time.toLocalDate == date)
-      val res = stats.zip(ans).map {
-        case (counter, list) =>
-          try {
-            list :+ counter._1(ms)
-          } catch {
-            case x: Throwable =>
-              println(":" * 100)
-              println(x)
-              println(":" * 100)
-              list :+ 0d
-          }
-      }
-      processDays(date.plusDays(1), res)
-    }
-
-    val result = processDays()
-
-    val r2: Seq[(List[Double], String)] = result.map { line =>
-      val reduced = reduceList(line)
-      val max = reduced.max
-      reduced.map(_ / max * 100)
-    }.zip(stats.map(_._2))
-
+    val r2 = MessageProcessor(msgs, stats).exec
     val url = Artist.draw(r2)
 
     println("!" * 100)
@@ -73,20 +28,44 @@ object Charter extends App {
 
   Thread.sleep(1000 * 60 * 60 * 24)
 
-  def reduceList(list: List[Double], res: List[Double] = List.empty[Double]): List[Double] = {
-    val n = 3
-    if (list.isEmpty) {
-      res
-    } else {
-      val take = list.take(n)
-      reduceList(list.drop(n), res :+ take.sum / take.size)
+}
+
+
+case class MessageProcessor(
+                           allMessages: Iterable[Message],
+                           metrics: List[Metric]
+                           ) {
+
+  val from: LocalDateTime = allMessages.map(_.time).minBy(x => x.getYear * 10000 + x.getMonthValue * 100 + x.getDayOfMonth)
+  val now = LocalDate.now()
+
+  def exec = processDays().map(listToChart).zip(metrics.map(_.name))
+
+  private def processDays(
+                           date: LocalDate = from.toLocalDate,
+                           ans: List[List[Double]] = metrics.map(_ => List[Double]())
+                         ): List[List[Double]] = {
+    if (date == now) return ans
+
+    val todayMessages = allMessages.filter(_.time.toLocalDate == date)
+    val res = metrics.zip(ans).map {
+      case (Metric(f, _), list) =>
+        val value = Try(f(todayMessages)) match {
+          case Success(x) =>
+            x
+          case Failure(ex) =>
+            println(ex)
+            0d
+        }
+        list :+ value
     }
+    processDays(date.plusDays(1), res)
   }
 
+  private def listToChart(line: List[Double]) = {
+    val n = 3
+    val reduced = line.sliding(n).map(l => l.sum / l.size).toSeq
+    val max = reduced.max
+    reduced.map(_ / max * 100)
+  }
 }
-
-trait Metric {
-  val name: String
-  def calc(msgs: Iterable[Message]): Double
-}
-
