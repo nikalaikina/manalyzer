@@ -1,12 +1,12 @@
-package org.github.nikalaikina.manalyser.util
+package org.github.nikalaikina.manalyser.chart
 
 import com.googlecode.charts4j.{Color, Data, GCharts, Plots}
 
 import scala.util.Random
 
-object Artist {
+object Artist extends Charter {
 
-  def draw(array: Seq[(Seq[Double], String)]): String = {
+  override def draw(array: Seq[(Seq[Double], String)]): String = {
     val plots = array.map {
       case (line, name) =>
         val plot = Plots.newPlot(Data.newData(line:_*))

@@ -4,6 +4,8 @@ version := "1.0"
 
 scalaVersion := "2.11.8"
 
+resolvers += Resolver.sonatypeRepo("snapshots")
+
 libraryDependencies ++= {
   val akkaVersion = "2.4.6"
 
@@ -21,6 +23,8 @@ libraryDependencies ++= {
     "com.googlecode.charts4j" % "charts4j" % "1.3",
 
     "org.apache.commons" % "commons-math3" % "3.6.1",
+    "info.mukel" %% "telegrambot4s" % "2.2.1-SNAPSHOT",
+    "jfree" % "jfreechart" % "1.0.13",
 
     "org.telegram" % "telegramapi" % "57.2"
   )
