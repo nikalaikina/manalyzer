@@ -21,17 +21,17 @@ object JFreeCharter {
     }
 
     val lineChart: JFreeChart = ChartFactory.createLineChart(
-      "Chart Title",
+      "Private chat chart",
       "Days",
-      "Lalala",
+      "Interest rate",
       dataset,
       PlotOrientation.VERTICAL,
       true, true, false
     )
 
-    val width = 1000   /* Width of the image */
-    val height = 600
-    ChartUtilities.saveChartAsJPEG(new File(fileName), lineChart, width, height)
+    val width = 1300   /* Width of the image */
+    val height = 400
+    ChartUtilities.saveChartAsPNG(new File(fileName), lineChart, width, height)
     val path = Paths.get(fileName)
     Files.readAllBytes(path)
   }

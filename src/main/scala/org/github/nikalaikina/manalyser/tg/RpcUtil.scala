@@ -7,7 +7,7 @@ import scala.util.{Failure, Success, Try}
 trait RpcUtil {
   val api: TelegramApi
 
-  def doRpcCall[T](f: () => T, attempts: Int = 3): T = {
+  def doRpcCall[T](f: () => T, attempts: Int = 2): T = {
     Try(f()) match {
       case Success(result) =>
         result

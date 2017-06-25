@@ -12,11 +12,12 @@ import scala.collection.immutable.Seq
 import scalaz.syntax.std.option._
 
 case class Message(
-                  fromMe: Boolean,
-                  userId: Long,
-                  text: Option[String],
-                  time: LocalDateTime,
-                  id: Option[String] = None
+                    fromProvider: Boolean,
+                    userIdWith: Long,
+                    userIdProvider: Long,
+                    text: Option[String],
+                    time: LocalDateTime,
+                    id: Option[String] = None
                   ) extends DbModel
 
 object Message {
@@ -33,8 +34,9 @@ object Message {
         val from = msg.getFromId
         val to = msg.getToId.getId
         Message(
-          fromMe = from == myId,
-          userId = if (from == myId) to else from,
+          fromProvider = from == myId,
+          userIdWith = if (from == myId) to else from,
+          userIdProvider = myId,
           text = msg.getMessage.some.filter(_.nonEmpty),
           time = LocalDateTime.ofInstant(Instant.ofEpochSecond(msg.getDate()), TimeZone.getDefault.toZoneId)
         ).some

@@ -3,22 +3,41 @@ package org.github.nikalaikina.manalyser.dao
 import java.time.{Clock, LocalDateTime}
 import java.util.concurrent.TimeUnit
 
+import org.bson.types.ObjectId
 import org.github.nikalaikina.manalyser.Message
 import org.mongodb.scala._
+import org.mongodb.scala.model.Filters._
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
 
 class MessageDao extends BaseDataAccess[Message] {
 
+  import Helpers._
+
   override def collectionName: String = "messages"
+
+
+  def find(userId: Long, withId: Long): Iterable[Message] = {
+    collection
+      .find(
+        and(equal("userIdWith", withId), equal("userIdProvider", userId))
+      ).results().flatMap(fromDoc)
+  }
+
+  def count(userId: Long, withId: Long): Long = {
+    collection.count(
+      and(equal("userIdWith", withId), equal("userIdProvider", userId))
+    ).results().head
+  }
 
   override def toDoc(e: Message): Document = {
     import e._
     val b = Document.builder
     b ++= Document(
-      "fromMe" -> fromMe,
-      "userId" -> userId,
+      "fromProvider" -> fromProvider,
+      "userIdWith" -> userIdWith,
+      "userIdProvider" -> userIdProvider,
       "time" -> time.toString
     )
 
@@ -26,15 +45,15 @@ class MessageDao extends BaseDataAccess[Message] {
     b.result()
   }
 
-
   override def fromDoc(d: Document): Option[Message] = {
     for {
       id <- d.get("_id").map(_.asObjectId().getValue.toString)
-      fromMe <- d.get("fromMe").map(_.asBoolean().getValue)
-      userId <- d.get("userId").map(_.asInt64().longValue())
+      fromProvider <- d.get("fromProvider").map(_.asBoolean().getValue)
+      userIdWith <- d.get("userIdWith").map(_.asInt64().longValue())
+      userIdProvider <- d.get("userIdProvider").map(_.asInt64().longValue())
       text = d.get("text").map(_.asString().getValue)
       time <- d.get("time").map(_.asString().getValue).map(LocalDateTime.parse)
-    } yield Message(fromMe, userId, text, time)
+    } yield Message(fromProvider, userIdWith, userIdProvider, text, time)
   }
 }
 
@@ -60,7 +79,7 @@ object Helpers {
       if (initial.length > 0) print(initial)
       results().foreach(res => println(converter(res)))
     }
-    def printHeadResult(initial: String = ""): Unit = println(s"${initial}${converter(headResult())}")
+    def printHeadResult(initial: String = ""): Unit = println(s"$initial${converter(headResult())}")
   }
 
 }

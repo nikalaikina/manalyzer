@@ -19,7 +19,7 @@ object CharterMain extends App {
   val dao = new MessageDao()
   dao.all.map { msgs =>
     val r2 = MessageProcessor(msgs, stats).exec
-    val url = JFreeCharter.draw(r2, "chart.jpg")
+    val url = JFreeCharter.draw(r2, "chart.png")
 
     println("!" * 100)
     println(url)

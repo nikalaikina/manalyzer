@@ -2,12 +2,12 @@ name := "manalyser"
 
 version := "1.0"
 
-scalaVersion := "2.11.8"
+scalaVersion := "2.12.2"
 
 resolvers += Resolver.sonatypeRepo("snapshots")
 
 libraryDependencies ++= {
-  val akkaVersion = "2.4.6"
+  val akkaVersion = "2.5.3"
 
   Seq(
     "com.typesafe.akka" %% "akka-actor" % akkaVersion,
@@ -26,6 +26,8 @@ libraryDependencies ++= {
     "info.mukel" %% "telegrambot4s" % "2.2.1-SNAPSHOT",
     "jfree" % "jfreechart" % "1.0.13",
 
-    "org.telegram" % "telegramapi" % "57.2"
+    "org.telegram" % "telegramapi" % "57.2",
+
+    "com.caffeineowl" % "bezier-utils" % "1.0.0-RELEASE"
   )
 }

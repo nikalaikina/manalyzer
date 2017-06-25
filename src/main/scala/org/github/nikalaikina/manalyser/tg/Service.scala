@@ -10,6 +10,7 @@ import org.telegram.api.functions.messages.{TLRequestMessagesGetDialogs, TLReque
 import org.telegram.api.input.peer.TLInputPeerUser
 import org.telegram.api.messages.TLAbsMessages
 import org.telegram.api.user.TLUser
+import info.mukel.telegrambot4s.models.{Message => BotMessage}
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}
@@ -75,6 +76,39 @@ class Service(override val api: TelegramApi) extends RpcUtil {
     }
   }
 
+  def getHistory(me: Long, userId: Long): Iterable[Message] = {
+    dao.find(me, userId)
+  }
+
+  def getHistory(msg: BotMessage): Iterable[Message] = {
+    val userId = msg.forwardFrom.get.id
+    val me = msg.from.get.id
+    dao.find(me, userId)
+  }
+
+  def persistHistory(msg: BotMessage): Unit = {
+    val count = 100
+    val userId = msg.forwardFrom.get.id
+    val me = msg.from.get.id
+    val offset = dao.count(me, userId)
+    def getNext(offset: Long = 0, acc: Vector[Message] = Vector.empty): Unit = {
+      val res = {
+        val getHistoryReq = new TLRequestMessagesGetHistory()
+        val user = new TLInputPeerUser()
+        user.setUserId(userId)
+        getHistoryReq.setPeer(user)
+        getHistoryReq.setLimit(count)
+        getHistoryReq.setAddOffset(offset.toInt)
+        val call: TLAbsMessages = doRpcCall { () => api.doRpcCall(getHistoryReq) }
+        Message.convert(call.getMessages, myId)
+      }
+      dao.insertAll(res)
+      val next = acc ++ res
+      if (res.size == count) getNext(offset + count, next)
+    }
+    getNext(offset)
+  }
+
   def getAll(f: (Int, Int) => Vector[Message], persist: Boolean = false): Vector[Message] = {
     val count = 100
     def getNext(offset: Int = 0, acc: Vector[Message] = Vector.empty): Vector[Message] = {
@@ -86,11 +120,7 @@ class Service(override val api: TelegramApi) extends RpcUtil {
       else
         getNext(offset + count, next)
     }
-    if (persist) {
-      Await.result(dao.count.map(_.toInt).map(getNext(_, Vector.empty)), t)
-    } else {
-      getNext()
-    }
+    getNext()
   }
 
 }

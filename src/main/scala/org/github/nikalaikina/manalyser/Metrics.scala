@@ -28,8 +28,8 @@ object Metrics {
     def textLength = toMsgSizes.sum
     def toMsgSizes = msgs.flatMap(_.text).map(_.length)
     def toOption = msgs.some.filter(_.nonEmpty)
-    def mine = msgs.filter(_.fromMe)
-    def notMine = msgs.filterNot(_.fromMe)
+    def mine = msgs.filter(_.fromProvider)
+    def notMine = msgs.filterNot(_.fromProvider)
   }
 }
 

@@ -1,11 +1,11 @@
 package org.github.nikalaikina.manalyser.bot
 
 import akka.actor.{ActorRef, FSM}
-import org.github.nikalaikina.manalyser.{MessageProcessor, Metrics, Setup}
-import org.github.nikalaikina.manalyser.bot.ChatFsm._
 import info.mukel.telegrambot4s.models.{Message => BotMessage}
+import org.github.nikalaikina.manalyser.bot.ChatFsm._
 import org.github.nikalaikina.manalyser.chart.JFreeCharter
 import org.github.nikalaikina.manalyser.tg.{ApiFactory, Service}
+import org.github.nikalaikina.manalyser.{MessageProcessor, Metrics}
 
 import scala.language.postfixOps
 
@@ -19,35 +19,32 @@ case class ChatFsm(botApi: ActorRef, chatId: Long) extends FSM[ChatFsm.State, Ch
 
   startWith(GettingNumber, Collecting())
 
-  override def preStart(): Unit = {
-    super.preStart()
-    txt("Send your phone number")
-  }
-
   when(GettingNumber) {
-    case Event(msg: BotMessage, _) =>
-      val number = msg.text.filter(txt => phoneNumberRx.findAllIn(txt).nonEmpty)
-      number match {
-        case Some(phoneNumber) =>
-          val sendCode = tgApi.sendCode(phoneNumber)
-          val timeout = sendCode.getTimeout
-          println(s"!!! TIMEOUT $timeout")
-          val hash = sendCode.getPhoneCodeHash
-          txt("Send your log in code")
-          goto(LogIn) using Number(phoneNumber, hash)
-        case None =>
-          txt("Invalid phone number")
-          stay()
-      }
+    case Event(msg: BotMessage, _) => msg.text match {
+      case Some("/start") =>
+        txt("Send your phone number")
+        stay()
 
+      case Some(phoneNumber) if phoneNumberRx.findAllIn(phoneNumber).nonEmpty =>
+        val sendCode = tgApi.sendCode(phoneNumber)
+        val timeout = sendCode.getTimeout
+        println(s"!!! TIMEOUT $timeout")
+        val hash = sendCode.getPhoneCodeHash
+        txt("Send your log in code")
+        goto(LogIn) using Number(phoneNumber, hash)
+
+      case None =>
+        txt("Invalid phone number")
+        stay()
+    }
   }
 
   when(LogIn) {
     case Event(msg: BotMessage, Number(phoneNumber, hash)) =>
       val code = msg.text.filter(txt => codeRx.findAllIn(txt).nonEmpty)
-      code match {
+      msg.text match {
         case Some(code) =>
-          tgApi.signIn(phoneNumber, code.split(" ").mkString, hash)
+          tgApi.signIn(phoneNumber, code.replace(".", ""), hash)
           txt("Forward any message from friend you want to analyse")
           goto(ChoosingUser)
         case None =>
@@ -58,13 +55,12 @@ case class ChatFsm(botApi: ActorRef, chatId: Long) extends FSM[ChatFsm.State, Ch
 
   when(ChoosingUser) {
     case Event(msg: BotMessage, Number(phoneNumber, hash)) =>
-      msg.forwardFrom.foreach { user =>
-        txt("Analysing ...")
-        val messages = tgApi.getHistory(user.id)
-        val r2 = MessageProcessor(messages, Metrics.stats).exec
-        val data = JFreeCharter.draw(r2, s"${chatId}_result.jpg")
-        pic(data)
-      }
+      txt("Analysing ...")
+      tgApi.persistHistory(msg)
+      val messages = tgApi.getHistory(msg)
+      val r2 = MessageProcessor(messages, Metrics.stats).exec
+      val data = JFreeCharter.draw(r2, s"${chatId}_result.png")
+      pic(data)
       stay()
   }
 

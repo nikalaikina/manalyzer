@@ -37,8 +37,10 @@ trait BaseDataAccess[T <: DbModel] {
   }
 
   def insertAll(list: Iterable[T]): Unit = {
-    val docs = list.map(e => org.mongodb.scala.bson.collection.mutable.Document(toDoc(e).toSet)).toSeq
-    mutableCollection.insertMany(docs).results()
+    if (list.nonEmpty) {
+      val docs = list.map(e => org.mongodb.scala.bson.collection.mutable.Document(toDoc(e).toSet)).toSeq
+      mutableCollection.insertMany(docs).results()
+    }
   }
 
   def update(e: T): Unit = {
