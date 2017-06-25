@@ -1,4 +1,4 @@
-package org.github.nikalaikina.manalyser.bot
+package org.github.nikalaikina.manalyzer.bot
 
 import akka.actor.{Actor, ActorRef, Props}
 import info.mukel.telegrambot4s.api.{ChatActions, Commands, Polling, TelegramBot}

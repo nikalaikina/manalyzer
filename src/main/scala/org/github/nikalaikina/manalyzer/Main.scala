@@ -1,8 +1,8 @@
-package org.github.nikalaikina.manalyser
+package org.github.nikalaikina.manalyzer
 
 import akka.actor._
-import org.github.nikalaikina.manalyser.bot.ManalyserBot
-import org.github.nikalaikina.manalyser.tg.{ApiFactory, Service}
+import org.github.nikalaikina.manalyzer.bot.ManalyserBot
+import org.github.nikalaikina.manalyzer.tg.{ApiFactory, Service}
 import org.telegram.api.message.TLMessage
 
 object Main extends App {

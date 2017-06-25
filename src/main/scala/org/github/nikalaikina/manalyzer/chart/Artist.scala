@@ -1,4 +1,4 @@
-package org.github.nikalaikina.manalyser.chart
+package org.github.nikalaikina.manalyzer.chart
 
 import com.googlecode.charts4j.{Color, Data, GCharts, Plots}
 

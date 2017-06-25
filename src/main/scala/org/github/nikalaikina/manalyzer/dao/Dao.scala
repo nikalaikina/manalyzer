@@ -1,10 +1,10 @@
-package org.github.nikalaikina.manalyser.dao
+package org.github.nikalaikina.manalyzer.dao
 
 import java.time.{Clock, LocalDateTime}
 import java.util.concurrent.TimeUnit
 
 import org.bson.types.ObjectId
-import org.github.nikalaikina.manalyser.Message
+import org.github.nikalaikina.manalyzer.Message
 import org.mongodb.scala._
 import org.mongodb.scala.model.Filters._
 

@@ -1,9 +1,9 @@
-package org.github.nikalaikina.manalyser
+package org.github.nikalaikina.manalyzer
 
 import java.time.{Instant, LocalDateTime}
 import java.util.TimeZone
 
-import org.github.nikalaikina.manalyser.dao.DbModel
+import org.github.nikalaikina.manalyzer.dao.DbModel
 import org.telegram.api.message.{TLAbsMessage, TLMessage, TLMessageEmpty, TLMessageService}
 import org.telegram.api.messages.{TLAbsMessages, TLMessagesSlice}
 import org.telegram.tl.TLVector

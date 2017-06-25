@@ -1,4 +1,4 @@
-package org.github.nikalaikina.manalyser.tg
+package org.github.nikalaikina.manalyzer.tg
 
 import org.telegram.api.engine.{RpcException, TelegramApi}
 

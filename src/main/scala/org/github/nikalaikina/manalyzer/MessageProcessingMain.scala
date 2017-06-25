@@ -1,7 +1,7 @@
-package org.github.nikalaikina.manalyser
+package org.github.nikalaikina.manalyzer
 
-import org.github.nikalaikina.manalyser.chart.JFreeCharter
-import org.github.nikalaikina.manalyser.tg.{ApiFactory, Service}
+import org.github.nikalaikina.manalyzer.chart.JFreeCharter
+import org.github.nikalaikina.manalyzer.tg.{ApiFactory, Service}
 import org.telegram.api.contact.TLContact
 import org.telegram.api.contacts.TLAbsContacts
 import org.telegram.api.message.TLMessage

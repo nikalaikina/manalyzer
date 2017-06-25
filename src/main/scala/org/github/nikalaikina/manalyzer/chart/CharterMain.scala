@@ -1,9 +1,9 @@
-package org.github.nikalaikina.manalyser.chart
+package org.github.nikalaikina.manalyzer.chart
 
 import java.time.{LocalDate, LocalDateTime}
 
-import org.github.nikalaikina.manalyser.dao.MessageDao
-import org.github.nikalaikina.manalyser.{Message, MessageProcessor, Metric, Metrics}
+import org.github.nikalaikina.manalyzer.dao.MessageDao
+import org.github.nikalaikina.manalyzer.{Message, MessageProcessor, Metric, Metrics}
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}

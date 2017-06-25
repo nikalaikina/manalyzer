@@ -1,11 +1,11 @@
-package org.github.nikalaikina.manalyser.bot
+package org.github.nikalaikina.manalyzer.bot
 
 import akka.actor.{ActorRef, FSM}
 import info.mukel.telegrambot4s.models.{Message => BotMessage}
-import org.github.nikalaikina.manalyser.bot.ChatFsm._
-import org.github.nikalaikina.manalyser.chart.JFreeCharter
-import org.github.nikalaikina.manalyser.tg.{ApiFactory, Service}
-import org.github.nikalaikina.manalyser.{MessageProcessor, Metrics}
+import org.github.nikalaikina.manalyzer.bot.ChatFsm._
+import org.github.nikalaikina.manalyzer.chart.JFreeCharter
+import org.github.nikalaikina.manalyzer.tg.{ApiFactory, Service}
+import org.github.nikalaikina.manalyzer.{MessageProcessor, Metrics}
 
 import scala.language.postfixOps
 

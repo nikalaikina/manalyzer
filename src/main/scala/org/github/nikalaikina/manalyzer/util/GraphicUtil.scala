@@ -1,4 +1,4 @@
-package org.github.nikalaikina.manalyser.util
+package org.github.nikalaikina.manalyzer.util
 
 import scala.annotation.tailrec
 import scala.util.Random

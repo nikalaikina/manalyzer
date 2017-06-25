@@ -1,4 +1,4 @@
-package org.github.nikalaikina.manalyser
+package org.github.nikalaikina.manalyzer
 
 import scalaz.syntax.std.option._
 

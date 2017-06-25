@@ -1,4 +1,4 @@
-package org.github.nikalaikina.manalyser.chart
+package org.github.nikalaikina.manalyzer.chart
 
 import java.io.{File, FileReader}
 import java.nio.file.{Files, Paths}

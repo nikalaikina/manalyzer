@@ -1,4 +1,4 @@
-package org.github.nikalaikina.manalyser
+package org.github.nikalaikina.manalyzer
 
 import java.time.{LocalDate, LocalDateTime}
 
@@ -9,7 +9,7 @@ case class MessageProcessor(
                            metrics: List[Metric]
                            ) {
 
-  import org.github.nikalaikina.manalyser.util.GraphicUtil._
+  import org.github.nikalaikina.manalyzer.util.GraphicUtil._
 
    val from: LocalDateTime = allMessages.map(_.time).minBy(x => x.getYear * 10000 + x.getMonthValue * 100 + x.getDayOfMonth)
    val now = LocalDate.now()

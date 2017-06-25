@@ -1,7 +1,7 @@
-package org.github.nikalaikina.manalyser.tg
+package org.github.nikalaikina.manalyzer.tg
 
-import org.github.nikalaikina.manalyser.dao.MessageDao
-import org.github.nikalaikina.manalyser.{Message, Setup}
+import org.github.nikalaikina.manalyzer.dao.MessageDao
+import org.github.nikalaikina.manalyzer.{Message, Setup}
 import org.telegram.api.contacts.TLContacts
 import org.telegram.api.engine.TelegramApi
 import org.telegram.api.functions.auth.{TLRequestAuthSendCode, TLRequestAuthSignIn}

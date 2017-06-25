@@ -1,4 +1,4 @@
-package org.github.nikalaikina.manalyser.dao
+package org.github.nikalaikina.manalyzer.dao
 
 import org.bson.types.ObjectId
 import org.mongodb.scala.model.Filters._

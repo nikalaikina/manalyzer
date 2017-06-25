@@ -1,6 +1,6 @@
-package org.github.nikalaikina.manalyser.tg
+package org.github.nikalaikina.manalyzer.tg
 
-import org.github.nikalaikina.manalyser.Setup
+import org.github.nikalaikina.manalyzer.Setup
 import org.telegram.api.engine.{ApiCallback, AppInfo, TelegramApi}
 import org.telegram.api.updates.TLAbsUpdates
 

@@ -1,4 +1,4 @@
-package org.github.nikalaikina.manalyser
+package org.github.nikalaikina.manalyzer
 
 import com.typesafe.config.ConfigFactory
 import org.telegram.bot.kernel.engine.MemoryApiState
