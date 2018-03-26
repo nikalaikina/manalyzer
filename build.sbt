@@ -2,7 +2,7 @@ name := "manalyser"
 
 version := "1.0"
 
-scalaVersion := "2.12.2"
+scalaVersion := "2.12.4"
 
 resolvers += Resolver.sonatypeRepo("snapshots")
 
@@ -14,10 +14,10 @@ libraryDependencies ++= {
     "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
     "com.typesafe.akka" %% "akka-testkit" % akkaVersion % "test",
 
-    "org.mongodb.scala" %% "mongo-scala-driver" % "1.0.1",
+    "org.mongodb.scala" %% "mongo-scala-driver" % "2.2.1",
 
     "ch.qos.logback" % "logback-classic" % "1.1.2",
-    "org.specs2" %% "specs2" % "2.3.13" % "test",
+    "org.specs2" %% "specs2-core" % "3.9.0" % Test,
 
     "org.scalaz" %% "scalaz-core" % "7.3.0-M10",
     "com.googlecode.charts4j" % "charts4j" % "1.3",

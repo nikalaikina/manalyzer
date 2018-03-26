@@ -24,7 +24,7 @@ trait BaseDataAccess[T <: DbModel] {
 
   def all: Future[Seq[T]] = collection.find().map(fromDoc).toFuture().map(_.flatten)
 
-  def count: Future[Long] = collection.count().toFuture().map(_.head)
+  def count: Future[Long] = collection.count().toFuture()
 
   def find(id: String): Option[T] = {
     collection.find(equal("_id", new ObjectId(id))).results().headOption.flatMap(fromDoc)
