@@ -5,6 +5,9 @@ import org.mongodb.scala.model.Filters._
 import org.mongodb.scala.{MongoCollection, _}
 
 import scala.concurrent.{ExecutionContext, Future}
+import com.mongodb.MongoCredential._
+import org.mongodb.scala.connection.ClusterSettings
+import scala.collection.JavaConverters._
 
 
 trait BaseDataAccess[T <: DbModel] {
@@ -15,7 +18,15 @@ trait BaseDataAccess[T <: DbModel] {
     java.util.concurrent.Executors.newCachedThreadPool()
   )
 
-  val database: MongoDatabase = MongoClient().getDatabase("manalyser")
+  val database: MongoDatabase = {
+    val user = "admin"
+    val database = "admin"
+    val password: Array[Char] = "abc123".toCharArray
+    val credential: MongoCredential = createScramSha1Credential(user, database, password)
+    val clusterSettings = ClusterSettings.builder().hosts(List(new ServerAddress("localhost")).asJava).description("Local Server").build()
+    val settings = MongoClientSettings.builder().credential(credential).clusterSettings(clusterSettings).build()
+    MongoClient(settings).getDatabase("manalyser")
+  }
   val collection: MongoCollection[Document] = database.getCollection(collectionName)
   val mutableCollection: MongoCollection[org.mongodb.scala.bson.collection.mutable.Document] =
     database.getCollection(collectionName)
@@ -39,7 +50,8 @@ trait BaseDataAccess[T <: DbModel] {
   def insertAll(list: Iterable[T]): Unit = {
     if (list.nonEmpty) {
       val docs = list.map(e => org.mongodb.scala.bson.collection.mutable.Document(toDoc(e).toSet)).toSeq
-      mutableCollection.insertMany(docs).results()
+      val res = mutableCollection.insertMany(docs).results()
+      println(res)
     }
   }
 

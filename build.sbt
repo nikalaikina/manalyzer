@@ -26,7 +26,7 @@ libraryDependencies ++= {
     "info.mukel" %% "telegrambot4s" % "2.2.1-SNAPSHOT",
     "jfree" % "jfreechart" % "1.0.13",
 
-    "org.telegram" % "telegramapi" % "57.2",
+    "org.telegram" % "telegramapi" % "66.2",
 
     "com.caffeineowl" % "bezier-utils" % "1.0.0-RELEASE"
   )

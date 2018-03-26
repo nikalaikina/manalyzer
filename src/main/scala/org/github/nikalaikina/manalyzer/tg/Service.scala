@@ -28,7 +28,7 @@ class Service(override val api: TelegramApi) extends RpcUtil {
   def sendCode(number: String = phone) = {
     val requestAuthSendCode = new TLRequestAuthSendCode()
     requestAuthSendCode.setApiId(apiId)
-    requestAuthSendCode.setApiHash("3d9eca44d19a205c079d0508772dbee7")
+    requestAuthSendCode.setApiHash(apiHash)
     requestAuthSendCode.setPhoneNumber(number)
     doRpcCall { () => api.doRpcCallNonAuth(requestAuthSendCode) }
   }

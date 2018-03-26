@@ -8,6 +8,7 @@ object Setup {
   val config = ConfigFactory.load()
 
   val apiId = config.getInt("tg-api.app-id")
+  val apiHash = config.getString("tg-api.api-hash")
   val state = new MemoryApiState("mem_api_state")
   val phone = config.getString("tg-api.phone")
 
