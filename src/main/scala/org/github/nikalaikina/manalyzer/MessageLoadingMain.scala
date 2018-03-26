@@ -1,5 +1,6 @@
 package org.github.nikalaikina.manalyzer
 
+import org.github.nikalaikina.manalyzer.dao.MessageDao
 import org.github.nikalaikina.manalyzer.tg.{ApiFactory, Service}
 import org.telegram.api.contact.TLContact
 import org.telegram.api.contacts.TLAbsContacts
@@ -23,6 +24,8 @@ object MessageLoadingMain extends App {
 
 case class Application(service: Service) {
 
+  val dao = new MessageDao()
+
   def run = {
     signIn
 
@@ -33,7 +36,7 @@ case class Application(service: Service) {
     val userId: Int = dialogs
       .getMessages.toArray.filter(_.isInstanceOf[TLMessage]).map(_.asInstanceOf[TLMessage])
       .find(_.getMessage == "хз").get.getFromId
-    val history: Seq[Message] = service.getHistory(userId)
+    val history: Seq[Message] = service.getHistory(userId, dao.insertAll)
     println("done")
   }
 

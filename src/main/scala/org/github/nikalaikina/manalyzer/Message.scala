@@ -21,12 +21,6 @@ case class Message(
                   ) extends DbModel
 
 object Message {
-  def fromTl(source: TLAbsMessages, myId: Int): Seq[Message] = {
-    source match {
-      case slice: TLMessagesSlice =>
-        convert(slice.getMessages, myId)
-    }
-  }
 
   def convert(msgs: TLVector[TLAbsMessage], myId: Int) = {
     msgs.toArray.toVector.flatMap {

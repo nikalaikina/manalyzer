@@ -4,6 +4,7 @@ import akka.actor.{ActorRef, FSM}
 import info.mukel.telegrambot4s.models.{Message => BotMessage}
 import org.github.nikalaikina.manalyzer.bot.ChatFsm._
 import org.github.nikalaikina.manalyzer.chart.JFreeCharter
+import org.github.nikalaikina.manalyzer.dao.MessageDao
 import org.github.nikalaikina.manalyzer.tg.{ApiFactory, Service}
 import org.github.nikalaikina.manalyzer.{MessageProcessor, Metrics}
 
@@ -16,6 +17,8 @@ case class ChatFsm(botApi: ActorRef, chatId: Long) extends FSM[ChatFsm.State, Ch
 
   val phoneNumberRx = "^[0-9\\-\\+]{9,15}$".r
   val codeRx = "^[0-9]{5}$".r
+
+  val dao = new MessageDao()
 
   startWith(GettingNumber, Collecting())
 
@@ -56,8 +59,7 @@ case class ChatFsm(botApi: ActorRef, chatId: Long) extends FSM[ChatFsm.State, Ch
   when(ChoosingUser) {
     case Event(msg: BotMessage, Number(phoneNumber, hash)) =>
       txt("Analysing ...")
-      tgApi.persistHistory(msg)
-      val messages = tgApi.getHistory(msg)
+      val messages = tgApi.getHistory(msg.forwardFrom.get.id, dao.insertAll)
       val r2 = MessageProcessor(messages, Metrics.stats).exec
       val data = JFreeCharter.draw(r2, s"${chatId}_result.png")
       pic(data)

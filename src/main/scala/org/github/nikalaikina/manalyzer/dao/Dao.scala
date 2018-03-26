@@ -1,15 +1,15 @@
 package org.github.nikalaikina.manalyzer.dao
 
-import java.time.{Clock, LocalDateTime}
+import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
 
-import org.bson.types.ObjectId
+import info.mukel.telegrambot4s.models.{Message => BotMessage}
 import org.github.nikalaikina.manalyzer.Message
 import org.mongodb.scala._
 import org.mongodb.scala.model.Filters._
 
+import scala.concurrent.Await
 import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, ExecutionContext, Future}
 
 class MessageDao extends BaseDataAccess[Message] {
 
@@ -17,6 +17,11 @@ class MessageDao extends BaseDataAccess[Message] {
 
   override def collectionName: String = "messages"
 
+  def getHistory(msg: BotMessage): Iterable[Message] = {
+    val userId = msg.forwardFrom.get.id
+    val me = msg.from.get.id
+    find(me, userId)
+  }
 
   def find(userId: Long, withId: Long): Iterable[Message] = {
     collection
@@ -74,12 +79,6 @@ object Helpers {
     val converter: (C) => String
 
     def results(): Seq[C] = Await.result(observable.toFuture(), Duration(10, TimeUnit.SECONDS))
-    def headResult() = Await.result(observable.head(), Duration(10, TimeUnit.SECONDS))
-    def printResults(initial: String = ""): Unit = {
-      if (initial.length > 0) print(initial)
-      results().foreach(res => println(converter(res)))
-    }
-    def printHeadResult(initial: String = ""): Unit = println(s"$initial${converter(headResult())}")
   }
 
 }
